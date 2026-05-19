@@ -63,4 +63,13 @@ class ServiceController extends Controller
 
         return redirect()->route('admin.services.index')->with('status', 'Service deleted.');
     }
+
+    public function toggle(Service $service): RedirectResponse
+    {
+        $service->update([
+            'is_active' => ! $service->is_active,
+        ]);
+
+        return redirect()->route('admin.services.index')->with('status', 'Service status updated.');
+    }
 }

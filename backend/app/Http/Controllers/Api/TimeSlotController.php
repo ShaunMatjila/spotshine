@@ -17,21 +17,30 @@ class TimeSlotController extends Controller
             'date' => ['required', 'date'],
         ]);
 
-        $date = CarbonImmutable::parse($request->string('date'))->startOfDay();
+        $date = CarbonImmutable::parse(
+            $request->string('date'),
+            (string) config('app.timezone')
+        )->startOfDay();
         $slots = collect(range(8, 17))
-            ->map(fn (int $hour) => $date->setTime($hour, 0)->toIso8601String());
+            ->map(fn (int $hour) => $date->setTime($hour, 0));
+
+        $startOfWindowUtc = $date->startOfDay()->utc();
+        $endOfWindowUtc = $date->endOfDay()->utc();
 
         $booked = Booking::query()
             ->where('service_id', $request->integer('service_id'))
-            ->whereDate('scheduled_at', $date)
+            ->whereBetween('scheduled_at', [$startOfWindowUtc, $endOfWindowUtc])
             ->whereNotIn('status', ['cancelled', 'completed'])
             ->pluck('scheduled_at')
-            ->map(fn ($value) => CarbonImmutable::parse($value)->setSeconds(0)->toIso8601String())
+            ->map(fn ($value) => CarbonImmutable::parse($value)->utc()->startOfMinute()->getTimestamp())
             ->all();
 
         return response()->json([
             'date' => $date->toDateString(),
-            'slots' => $slots->reject(fn ($slot) => in_array($slot, $booked, true))->values(),
+            'slots' => $slots
+                ->reject(fn (CarbonImmutable $slot) => in_array($slot->utc()->startOfMinute()->getTimestamp(), $booked, true))
+                ->values()
+                ->map(fn (CarbonImmutable $slot) => $slot->toIso8601String()),
         ]);
     }
 }

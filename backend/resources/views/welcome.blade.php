@@ -46,15 +46,15 @@
             <form method="POST" action="{{ route('contact.store') }}" class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
                 @csrf
                 <div>
-                    <x-input-label for="name" value="Name" />
+                    <x-input-label for="name" value="Name" class="text-slate-200" />
                     <x-text-input id="name" name="name" class="mt-1 block w-full" required />
                 </div>
                 <div>
-                    <x-input-label for="email" value="Email" />
+                    <x-input-label for="email" value="Email" class="text-slate-200" />
                     <x-text-input id="email" type="email" name="email" class="mt-1 block w-full" required />
                 </div>
                 <div>
-                    <x-input-label for="message" value="Message" />
+                    <x-input-label for="message" value="Message" class="text-slate-200" />
                     <textarea id="message" name="message" rows="4" class="mt-1 block w-full rounded-md border-slate-700 bg-slate-800 text-slate-100" required></textarea>
                 </div>
                 <x-primary-button>Send message</x-primary-button>
