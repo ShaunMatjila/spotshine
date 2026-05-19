@@ -366,7 +366,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
         <View style={styles.heroCard}>
           <Text style={styles.heroEyebrow}>Your visits</Text>
           <Text style={styles.heroTitle}>Booking history</Text>
-          <Text style={styles.heroSubtitle}>Track upcoming cleans and revisit your favourites.</Text>
+          <Text style={styles.heroSubtitle}>Track upcoming cleans and revisit your favorites.</Text>
         </View>
         {bookings.map((booking) => (
           <View key={booking.id} style={styles.card}>
@@ -381,7 +381,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
           const message = notification.data?.message ?? 'You have a new notification.';
           return (
             <View key={notification.id} style={styles.note} accessibilityRole="text">
-              <Text style={styles.noteText} accessibilityLabel={`Notification: ${message}`}>
+              <Text style={styles.noteText} accessibilityLabel={message}>
                 {message}
               </Text>
             </View>
