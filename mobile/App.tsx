@@ -28,7 +28,7 @@ const SLOT_LOAD_ERROR = 'Could not load available slots.';
 const COLORS = {
   background: '#f5f7fb',
   surface: '#ffffff',
-  surfaceMuted: '#0b1120',
+  surfaceDark: '#0b1120',
   surfaceTint: '#e0f2fe',
   text: '#0f172a',
   textMuted: '#64748b',
@@ -398,7 +398,7 @@ export default function App() {
       <StatusBar style="light" />
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: COLORS.surfaceMuted },
+          headerStyle: { backgroundColor: COLORS.surfaceDark },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: '700' },
           headerShadowVisible: false,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.surfaceMuted,
+    backgroundColor: COLORS.surfaceDark,
     paddingHorizontal: 24,
   },
   splashBadge: {
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   authContainer: { paddingBottom: 24 },
   hero: { marginBottom: 20, paddingTop: 8 },
   heroCard: {
-    backgroundColor: COLORS.surfaceMuted,
+    backgroundColor: COLORS.surfaceDark,
     borderRadius: 24,
     padding: 18,
     marginBottom: 16,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderWidth: 1,
-    borderColor: COLORS.surfaceTint,
+    borderColor: COLORS.border,
     shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.08,
