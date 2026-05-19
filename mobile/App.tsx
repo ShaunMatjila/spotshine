@@ -25,6 +25,7 @@ type AuthState = { token: string; user: { id: number; name: string; email: strin
 const Stack = createNativeStackNavigator();
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const SLOT_LOAD_ERROR = 'Could not load available slots.';
+const FALLBACK_NOTIFICATION_MESSAGE = 'You have a new SpotShine notification.';
 const COLORS = {
   background: '#f5f7fb',
   surface: '#ffffff',
@@ -33,6 +34,7 @@ const COLORS = {
   text: '#0f172a',
   textMuted: '#64748b',
   textLight: '#e2e8f0',
+  onDark: '#f8fafc',
   primary: '#0ea5e9',
   primaryDark: '#0369a1',
   accent: '#22c55e',
@@ -204,7 +206,7 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
             accessibilityRole="button"
             accessibilityLabel={isLogin ? 'Login to your SpotShine account' : 'Create your SpotShine account'}
           >
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
+            {loading ? <ActivityIndicator color={COLORS.onDark} /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
           </Pressable>
 
           <View style={styles.secondaryButtonDisabled}>
@@ -353,7 +355,6 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
 function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifications, setNotifications] = useState<Array<{ id: string; data?: { message?: string } }>>([]);
-  const fallbackNotificationMessage = 'You have a new SpotShine notification.';
 
   const load = async () => {
     const headers = { Authorization: `Bearer ${auth.token}` };
@@ -388,7 +389,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
         <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => {
-          const message = notification.data?.message ?? fallbackNotificationMessage;
+          const message = notification.data?.message ?? FALLBACK_NOTIFICATION_MESSAGE;
           return (
             <View key={notification.id} style={styles.note} accessibilityRole="text">
               <Text style={styles.noteText} accessibilityLabel={message}>
@@ -425,7 +426,7 @@ export default function App() {
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: COLORS.surfaceDark },
-          headerTintColor: '#fff',
+          headerTintColor: COLORS.onDark,
           headerTitleStyle: { fontWeight: '700' },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: COLORS.background },
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
-  logo: { color: '#f8fafc', fontSize: 40, fontWeight: '800', letterSpacing: 0.5 },
+  logo: { color: COLORS.onDark, fontSize: 40, fontWeight: '800', letterSpacing: 0.5 },
   splashText: { marginTop: 12, color: COLORS.textLight },
   screen: { flex: 1, paddingHorizontal: 18, paddingTop: 10, backgroundColor: COLORS.background },
   authContainer: { paddingBottom: 24 },
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 6,
   },
-  heroTitle: { fontSize: 24, fontWeight: '800', color: '#fff', marginBottom: 6 },
+  heroTitle: { fontSize: 24, fontWeight: '800', color: COLORS.onDark, marginBottom: 6 },
   heroSubtitle: { fontSize: 14, color: COLORS.textLight },
   title: { fontSize: 30, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
   subtitle: { fontSize: 15, color: COLORS.textMuted, marginBottom: 12 },
@@ -526,7 +527,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   primaryButtonPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  buttonText: { color: COLORS.onDark, fontWeight: '700', fontSize: 16 },
   secondaryButtonDisabled: {
     borderWidth: 1,
     borderColor: COLORS.border,
