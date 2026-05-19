@@ -56,7 +56,7 @@ function Splash({ onDone }: { onDone: () => void }) {
   return (
     <SafeAreaView style={styles.splashContainer}>
       <View style={styles.splashBadge}>
-        <Text style={styles.splashBadgeText}>Premium detailing</Text>
+        <Text style={styles.splashBadgeText}>Premium Detailing</Text>
       </View>
       <Text style={styles.logo}>SpotShine</Text>
       <ActivityIndicator size="large" color="#38bdf8" style={{ marginTop: 20 }} />
@@ -196,7 +196,14 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
             />
           )}
 
-          <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.primaryButtonPressed]} onPress={submit} disabled={loading}>
+          <Pressable
+            style={({ pressed }) => [styles.primaryButton, pressed && styles.primaryButtonPressed]}
+            onPress={submit}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel={isLogin ? 'Login to your SpotShine account' : 'Create your SpotShine account'}
+            accessibilityHint={isLogin ? 'Signs you in to continue booking services' : 'Creates a new account to start booking services'}
+          >
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
           </Pressable>
 
@@ -291,6 +298,10 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
               selectedService?.id === item.id && styles.cardSelected,
             ]}
             onPress={() => setSelectedService(item)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: selectedService?.id === item.id }}
+            accessibilityLabel={`${item.name} package`}
+            accessibilityHint="Select this service to see available time slots"
           >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardDescription}>{item.description}</Text>
@@ -319,7 +330,9 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
                     </Pressable>
                   ))
                 ) : (
-                  <Text style={styles.helperText}>No slots available yet. Try another date.</Text>
+                  <Text style={styles.helperText} accessibilityLabel="No slots available for the selected date. Try another date.">
+                    No slots available yet. Try another date.
+                  </Text>
                 )}
               </View>
             </View>
@@ -367,8 +380,13 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
         <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => (
-          <View key={notification.id} style={styles.note}>
-            <Text style={styles.noteText}>{notification.data?.message}</Text>
+          <View key={notification.id} style={styles.note} accessibilityRole="text">
+            <Text
+              style={styles.noteText}
+              accessibilityLabel={`Notification: ${notification.data?.message ?? 'New update'}`}
+            >
+              {notification.data?.message}
+            </Text>
           </View>
         ))}
       </ScrollView>
