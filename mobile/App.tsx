@@ -25,7 +25,7 @@ type AuthState = { token: string; user: { id: number; name: string; email: strin
 const Stack = createNativeStackNavigator();
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const SLOT_LOAD_ERROR = 'Could not load available slots.';
-const FALLBACK_NOTIFICATION_MESSAGE = 'You have a new SpotShine notification.';
+const DEFAULT_NOTIFICATION_MESSAGE = 'You have a new SpotShine notification.';
 const COLORS = {
   background: '#f5f7fb',
   surface: '#ffffff',
@@ -322,18 +322,19 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
                 placeholderTextColor={COLORS.placeholder}
               />
               <Text style={styles.sectionTitle}>Available slots</Text>
-              <View style={styles.slotWrap}>
+              <View style={styles.slotWrap} accessibilityLiveRegion="polite">
                 {slots.length ? (
                   slots.map((slot) => {
                     const slotTime = new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const serviceName = selectedService?.name ?? 'Selected service';
+                    const slotDate = new Date(slot).toLocaleDateString();
+                    const serviceName = selectedService!.name;
                     return (
                       <Pressable
                         key={slot}
                         style={({ pressed }) => [styles.slot, pressed && styles.slotPressed]}
                         onPress={() => book(slot)}
                         accessibilityRole="button"
-                        accessibilityLabel={`Book ${serviceName} at ${slotTime} on ${date}`}
+                        accessibilityLabel={`Book ${serviceName} at ${slotTime} on ${slotDate}`}
                         accessibilityHint="Books this detailing appointment time"
                       >
                         <Text style={styles.slotText}>{slotTime}</Text>
@@ -389,7 +390,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
         <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => {
-          const message = notification.data?.message ?? FALLBACK_NOTIFICATION_MESSAGE;
+          const message = notification.data?.message ?? DEFAULT_NOTIFICATION_MESSAGE;
           return (
             <View key={notification.id} style={styles.note} accessibilityRole="text">
               <Text style={styles.noteText} accessibilityLabel={message}>
