@@ -330,9 +330,7 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
                     </Pressable>
                   ))
                 ) : (
-                  <Text style={styles.helperText} accessibilityLabel="No slots available for the selected date. Try another date.">
-                    No slots available yet. Try another date.
-                  </Text>
+                  <Text style={styles.helperText}>No slots available yet. Try another date.</Text>
                 )}
               </View>
             </View>
@@ -379,16 +377,16 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
         ))}
 
         <Text style={styles.sectionTitle}>Notifications</Text>
-        {notifications.map((notification) => (
-          <View key={notification.id} style={styles.note} accessibilityRole="text">
-            <Text
-              style={styles.noteText}
-              accessibilityLabel={`Notification: ${notification.data?.message ?? 'New update'}`}
-            >
-              {notification.data?.message}
-            </Text>
-          </View>
-        ))}
+        {notifications.map((notification) => {
+          const message = notification.data?.message ?? 'SpotShine notification';
+          return (
+            <View key={notification.id} style={styles.note} accessibilityRole="text">
+              <Text style={styles.noteText} accessibilityLabel={`Notification: ${message}`}>
+                {message}
+              </Text>
+            </View>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
