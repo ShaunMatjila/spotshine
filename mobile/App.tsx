@@ -25,6 +25,7 @@ type AuthState = { token: string; user: { id: number; name: string; email: strin
 const Stack = createNativeStackNavigator();
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const SLOT_LOAD_ERROR = 'Could not load available slots.';
+const DEFAULT_NOTIFICATION_MESSAGE = 'You have a new notification.';
 const COLORS = {
   background: '#f5f7fb',
   surface: '#ffffff',
@@ -60,7 +61,7 @@ function Splash({ onDone }: { onDone: () => void }) {
         <Text style={styles.splashBadgeText}>Premium Detailing</Text>
       </View>
       <Text style={styles.logo}>SpotShine</Text>
-      <ActivityIndicator size="large" color="#38bdf8" style={{ marginTop: 20 }} />
+      <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 20 }} />
       <Text style={styles.splashText}>Preparing your next shine…</Text>
     </SafeAreaView>
   );
@@ -322,13 +323,21 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
               <Text style={styles.sectionTitle}>Available slots</Text>
               <View style={styles.slotWrap}>
                 {slots.length ? (
-                  slots.map((slot) => (
-                    <Pressable key={slot} style={({ pressed }) => [styles.slot, pressed && styles.slotPressed]} onPress={() => book(slot)}>
-                      <Text style={styles.slotText}>
-                        {new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Text>
-                    </Pressable>
-                  ))
+                  slots.map((slot) => {
+                    const slotTime = new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    return (
+                      <Pressable
+                        key={slot}
+                        style={({ pressed }) => [styles.slot, pressed && styles.slotPressed]}
+                        onPress={() => book(slot)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Book ${slotTime} slot`}
+                        accessibilityHint="Books this detailing appointment time"
+                      >
+                        <Text style={styles.slotText}>{slotTime}</Text>
+                      </Pressable>
+                    );
+                  })
                 ) : (
                   <Text style={styles.helperText}>No slots available yet. Try another date.</Text>
                 )}
@@ -378,7 +387,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
         <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => {
-          const message = notification.data?.message ?? 'You have a new notification.';
+          const message = notification.data?.message ?? DEFAULT_NOTIFICATION_MESSAGE;
           return (
             <View key={notification.id} style={styles.note} accessibilityRole="text">
               <Text style={styles.noteText} accessibilityLabel={message}>
