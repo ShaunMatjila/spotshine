@@ -32,7 +32,7 @@ class TimeSlotController extends Controller
             ->whereBetween('scheduled_at', [$startOfWindowUtc, $endOfWindowUtc])
             ->whereNotIn('status', ['cancelled', 'completed'])
             ->pluck('scheduled_at')
-            ->map(fn ($value) => CarbonImmutable::parse($value)->utc()->startOfMinute()->getTimestamp())
+            ->map(fn (mixed $scheduledAt) => CarbonImmutable::parse($scheduledAt)->utc()->startOfMinute()->getTimestamp())
             ->all();
 
         return response()->json([

@@ -3,7 +3,7 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -24,6 +24,7 @@ type AuthState = { token: string; user: { id: number; name: string; email: strin
 
 const Stack = createNativeStackNavigator();
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const SLOT_LOAD_ERROR = 'Could not load available slots.';
 
 function Splash({ onDone }: { onDone: () => void }) {
   useEffect(() => {
@@ -94,7 +95,16 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      const data = await response.json();
+      const raw = await response.text();
+      let data: { message?: string } | null = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          // Non-JSON error payloads are handled by fallback messaging below.
+          data = null;
+        }
+      }
 
       if (response.ok) {
         Alert.alert('Password reset', 'A reset link has been sent to your email.');
@@ -150,17 +160,29 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
     fetch(`${API_BASE}/services`).then(async (res) => setServices(await res.json()));
   }, []);
 
-  const loadSlots = useCallback(async (serviceId: number, selectedDate: string) => {
-    const response = await fetch(`${API_BASE}/time-slots?service_id=${serviceId}&date=${selectedDate}`);
-    const data = await response.json();
-    setSlots(data.slots || []);
-  }, []);
-
   useEffect(() => {
-    if (selectedService) {
-      loadSlots(selectedService.id, date);
+    if (!selectedService) {
+      return;
     }
-  }, [date, loadSlots, selectedService]);
+
+    const run = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/time-slots?service_id=${selectedService.id}&date=${date}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.message || SLOT_LOAD_ERROR);
+        }
+
+        setSlots(data.slots || []);
+      } catch (error) {
+        setSlots([]);
+        Alert.alert('Slots unavailable', error instanceof Error ? error.message : SLOT_LOAD_ERROR);
+      }
+    };
+
+    run();
+  }, [date, selectedService]);
 
   const book = async (slot: string) => {
     const response = await fetch(`${API_BASE}/bookings`, {

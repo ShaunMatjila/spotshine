@@ -9,12 +9,14 @@ class CustomerDashboardController extends Controller
 {
     public function __invoke(): RedirectResponse|View
     {
-        if (in_array(auth()->user()->role, ['super_admin', 'manager'], true)) {
+        $user = auth()->user();
+
+        if (in_array($user->role, ['super_admin', 'manager'], true)) {
             return redirect()->route('admin.dashboard');
         }
 
         return view('dashboard', [
-            'bookings' => auth()->user()->bookings()->with('service')->latest()->get(),
+            'bookings' => $user->bookings()->with('service')->latest()->get(),
         ]);
     }
 }
