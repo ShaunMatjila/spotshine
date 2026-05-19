@@ -36,6 +36,7 @@ const COLORS = {
   primary: '#0ea5e9',
   primaryDark: '#0369a1',
   accent: '#22c55e',
+  accentSoft: 'rgba(34, 197, 94, 0.16)',
   border: '#e2e8f0',
   placeholder: '#94a3b8',
 };
@@ -202,7 +203,6 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
             disabled={loading}
             accessibilityRole="button"
             accessibilityLabel={isLogin ? 'Login to your SpotShine account' : 'Create your SpotShine account'}
-            accessibilityHint={isLogin ? 'Signs you in to continue booking services' : 'Creates a new account to start booking services'}
           >
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
           </Pressable>
@@ -378,7 +378,7 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
         <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => {
-          const message = notification.data?.message ?? 'SpotShine notification';
+          const message = notification.data?.message ?? 'You have a new notification.';
           return (
             <View key={notification.id} style={styles.note} accessibilityRole="text">
               <Text style={styles.noteText} accessibilityLabel={`Notification: ${message}`}>
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   splashBadge: {
-    backgroundColor: 'rgba(34, 197, 94, 0.16)',
+    backgroundColor: COLORS.accentSoft,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 6,
