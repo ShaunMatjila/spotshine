@@ -25,6 +25,27 @@ type AuthState = { token: string; user: { id: number; name: string; email: strin
 const Stack = createNativeStackNavigator();
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const SLOT_LOAD_ERROR = 'Could not load available slots.';
+const COLORS = {
+  background: '#f5f7fb',
+  surface: '#ffffff',
+  surfaceMuted: '#0b1120',
+  surfaceTint: '#e0f2fe',
+  text: '#0f172a',
+  textMuted: '#64748b',
+  textLight: '#e2e8f0',
+  primary: '#0ea5e9',
+  primaryDark: '#0369a1',
+  accent: '#22c55e',
+  border: '#e2e8f0',
+  placeholder: '#94a3b8',
+};
+const CARD_SHADOW = {
+  shadowColor: '#0f172a',
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.08,
+  shadowRadius: 18,
+  elevation: 4,
+};
 
 function Splash({ onDone }: { onDone: () => void }) {
   useEffect(() => {
@@ -34,6 +55,9 @@ function Splash({ onDone }: { onDone: () => void }) {
 
   return (
     <SafeAreaView style={styles.splashContainer}>
+      <View style={styles.splashBadge}>
+        <Text style={styles.splashBadgeText}>Premium detailing</Text>
+      </View>
       <Text style={styles.logo}>SpotShine</Text>
       <ActivityIndicator size="large" color="#38bdf8" style={{ marginTop: 20 }} />
       <Text style={styles.splashText}>Preparing your next shine…</Text>
@@ -118,31 +142,77 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.authCard}>
-        <Text style={styles.title}>Welcome to SpotShine</Text>
-        <Text style={styles.subtitle}>Book detailing in minutes.</Text>
-        {!isLogin && <TextInput placeholder="Full name" style={styles.input} value={name} onChangeText={setName} />}
-        <TextInput placeholder="Email" style={styles.input} keyboardType="email-address" value={email} onChangeText={setEmail} autoCapitalize="none" />
-        {!isLogin && <TextInput placeholder="Phone number" style={styles.input} value={phone} onChangeText={setPhone} />}
-        <TextInput placeholder="Password" style={styles.input} secureTextEntry value={password} onChangeText={setPassword} />
-        {!isLogin && (
+      <ScrollView contentContainerStyle={styles.authContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Text style={styles.heroEyebrow}>Detailing on demand</Text>
+          <Text style={styles.title}>Welcome to SpotShine</Text>
+          <Text style={styles.subtitle}>Book a premium wash in minutes, with live updates and trusted specialists.</Text>
+        </View>
+        <View style={styles.authCard}>
+          <Text style={styles.sectionTitle}>{isLogin ? 'Sign in' : 'Create account'}</Text>
+          {!isLogin && (
+            <TextInput
+              placeholder="Full name"
+              placeholderTextColor={COLORS.placeholder}
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
+          )}
           <TextInput
-            placeholder="Confirm password"
+            placeholder="Email"
+            placeholderTextColor={COLORS.placeholder}
+            style={styles.input}
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+          />
+          {!isLogin && (
+            <TextInput
+              placeholder="Phone number"
+              placeholderTextColor={COLORS.placeholder}
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+            />
+          )}
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor={COLORS.placeholder}
             style={styles.input}
             secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            value={password}
+            onChangeText={setPassword}
           />
-        )}
+          {!isLogin && (
+            <TextInput
+              placeholder="Confirm password"
+              placeholderTextColor={COLORS.placeholder}
+              style={styles.input}
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+          )}
 
-        <Pressable style={styles.primaryButton} onPress={submit} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
-        </Pressable>
+          <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.primaryButtonPressed]} onPress={submit} disabled={loading}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
+          </Pressable>
 
-        <View style={styles.secondaryButtonDisabled}><Text style={styles.secondaryTextMuted}>Google login (coming soon)</Text></View>
-        <View style={styles.secondaryButtonDisabled}><Text style={styles.secondaryTextMuted}>Facebook login (coming soon)</Text></View>
-        <Pressable onPress={() => setIsLogin(!isLogin)}><Text style={styles.link}>{isLogin ? 'Need an account? Register' : 'Already have an account? Login'}</Text></Pressable>
-        <Pressable onPress={forgotPassword}><Text style={styles.link}>Forgot password?</Text></Pressable>
+          <View style={styles.secondaryButtonDisabled}>
+            <Text style={styles.secondaryTextMuted}>Google login (coming soon)</Text>
+          </View>
+          <View style={styles.secondaryButtonDisabled}>
+            <Text style={styles.secondaryTextMuted}>Facebook login (coming soon)</Text>
+          </View>
+          <Pressable onPress={() => setIsLogin(!isLogin)}>
+            <Text style={styles.link}>{isLogin ? 'Need an account? Register' : 'Already have an account? Login'}</Text>
+          </Pressable>
+          <Pressable onPress={forgotPassword}>
+            <Text style={styles.link}>Forgot password?</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -204,27 +274,53 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
   return (
     <SafeAreaView style={styles.screen}>
       <FlatList
-        ListHeaderComponent={<Text style={[styles.title, { marginBottom: 10 }]}>Book a wash</Text>}
+        ListHeaderComponent={
+          <View style={styles.heroCard}>
+            <Text style={styles.heroEyebrow}>On-demand detailing</Text>
+            <Text style={styles.heroTitle}>Book a wash</Text>
+            <Text style={styles.heroSubtitle}>Choose a package and lock in a time that suits you.</Text>
+          </View>
+        }
         data={services}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <Pressable style={[styles.card, selectedService?.id === item.id && styles.cardSelected]} onPress={() => setSelectedService(item)}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.card,
+              pressed && styles.cardPressed,
+              selectedService?.id === item.id && styles.cardSelected,
+            ]}
+            onPress={() => setSelectedService(item)}
+          >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardDescription}>{item.description}</Text>
             <Text style={styles.cardPrice}>R{Number(item.price).toFixed(2)} · {item.duration_minutes} min</Text>
           </Pressable>
         )}
+        contentContainerStyle={styles.listContent}
         ListFooterComponent={
           selectedService ? (
-            <View style={{ marginTop: 10 }}>
-              <TextInput value={date} onChangeText={setDate} style={styles.input} placeholder="YYYY-MM-DD" />
-              <Text style={styles.subtitle}>Available slots</Text>
+            <View style={styles.slotSection}>
+              <TextInput
+                value={date}
+                onChangeText={setDate}
+                style={styles.input}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={COLORS.placeholder}
+              />
+              <Text style={styles.sectionTitle}>Available slots</Text>
               <View style={styles.slotWrap}>
-                {slots.map((slot) => (
-                  <Pressable key={slot} style={styles.slot} onPress={() => book(slot)}>
-                    <Text style={{ color: '#0f172a' }}>{new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                  </Pressable>
-                ))}
+                {slots.length ? (
+                  slots.map((slot) => (
+                    <Pressable key={slot} style={({ pressed }) => [styles.slot, pressed && styles.slotPressed]} onPress={() => book(slot)}>
+                      <Text style={styles.slotText}>
+                        {new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </Pressable>
+                  ))
+                ) : (
+                  <Text style={styles.helperText}>No slots available yet. Try another date.</Text>
+                )}
               </View>
             </View>
           ) : null
@@ -255,8 +351,12 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView>
-        <Text style={styles.title}>Booking history</Text>
+      <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.heroCard}>
+          <Text style={styles.heroEyebrow}>Your visits</Text>
+          <Text style={styles.heroTitle}>Booking history</Text>
+          <Text style={styles.heroSubtitle}>Track upcoming cleans and revisit your favourites.</Text>
+        </View>
         {bookings.map((booking) => (
           <View key={booking.id} style={styles.card}>
             <Text style={styles.cardTitle}>{booking.service?.name}</Text>
@@ -265,9 +365,11 @@ function HistoryScreen({ auth }: { auth: NonNullable<AuthState> }) {
           </View>
         ))}
 
-        <Text style={[styles.subtitle, { marginTop: 16 }]}>Notifications</Text>
+        <Text style={styles.sectionTitle}>Notifications</Text>
         {notifications.map((notification) => (
-          <View key={notification.id} style={styles.note}><Text>{notification.data?.message}</Text></View>
+          <View key={notification.id} style={styles.note}>
+            <Text style={styles.noteText}>{notification.data?.message}</Text>
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -294,7 +396,15 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar style="light" />
-      <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#0f172a' }, headerTintColor: '#fff', contentStyle: { backgroundColor: '#f1f5f9' } }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: COLORS.surfaceMuted },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: '700' },
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: COLORS.background },
+        }}
+      >
         {!auth ? (
           <Stack.Screen name="Auth" options={{ title: 'Sign in' }}>
             {() => <AuthScreen onAuthenticated={setAuth} />}
@@ -315,34 +425,125 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  splashContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#020617' },
-  logo: { color: '#f8fafc', fontSize: 38, fontWeight: '800' },
-  splashText: { marginTop: 12, color: '#cbd5e1' },
-  screen: { flex: 1, padding: 16 },
-  authCard: { paddingVertical: 20, gap: 10 },
-  title: { fontSize: 28, fontWeight: '800', color: '#0f172a' },
-  subtitle: { fontSize: 14, color: '#334155', marginBottom: 8 },
-  input: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  splashContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surfaceMuted,
+    paddingHorizontal: 24,
   },
-  primaryButton: { backgroundColor: '#0284c7', borderRadius: 10, padding: 12, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: '700' },
-  secondaryButton: { borderWidth: 1, borderColor: '#94a3b8', borderRadius: 10, padding: 11, alignItems: 'center' },
-  secondaryButtonDisabled: { borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 11, alignItems: 'center', backgroundColor: '#f8fafc' },
-  secondaryText: { color: '#0f172a', fontWeight: '600' },
-  secondaryTextMuted: { color: '#64748b', fontWeight: '600' },
-  link: { color: '#0369a1', marginTop: 6 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0' },
-  cardSelected: { borderColor: '#0284c7', borderWidth: 2 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
-  cardDescription: { fontSize: 13, color: '#475569', marginTop: 4 },
-  cardPrice: { fontSize: 14, marginTop: 8, color: '#0f172a', fontWeight: '600' },
-  slotWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  slot: { backgroundColor: '#bae6fd', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  note: { backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 },
+  splashBadge: {
+    backgroundColor: 'rgba(34, 197, 94, 0.16)',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    marginBottom: 16,
+  },
+  splashBadgeText: {
+    color: COLORS.accent,
+    fontWeight: '700',
+    fontSize: 12,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  logo: { color: '#f8fafc', fontSize: 40, fontWeight: '800', letterSpacing: 0.5 },
+  splashText: { marginTop: 12, color: COLORS.textLight },
+  screen: { flex: 1, paddingHorizontal: 18, paddingTop: 10, backgroundColor: COLORS.background },
+  authContainer: { paddingBottom: 24 },
+  hero: { marginBottom: 20, paddingTop: 8 },
+  heroCard: {
+    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: 24,
+    padding: 18,
+    marginBottom: 16,
+    ...CARD_SHADOW,
+  },
+  heroEyebrow: {
+    color: COLORS.accent,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  heroTitle: { fontSize: 24, fontWeight: '800', color: '#fff', marginBottom: 6 },
+  heroSubtitle: { fontSize: 14, color: COLORS.textLight },
+  title: { fontSize: 30, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
+  subtitle: { fontSize: 15, color: COLORS.textMuted, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 8, marginTop: 8 },
+  authCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 24,
+    padding: 18,
+    gap: 12,
+    ...CARD_SHADOW,
+  },
+  input: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  primaryButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: COLORS.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  primaryButtonPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  secondaryButtonDisabled: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceTint,
+  },
+  secondaryTextMuted: { color: COLORS.textMuted, fontWeight: '600' },
+  link: { color: COLORS.primaryDark, marginTop: 4, fontWeight: '600' },
+  listContent: { paddingBottom: 24 },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...CARD_SHADOW,
+  },
+  cardPressed: { transform: [{ scale: 0.99 }] },
+  cardSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.surfaceTint },
+  cardTitle: { fontSize: 17, fontWeight: '700', color: COLORS.text },
+  cardDescription: { fontSize: 13, color: COLORS.textMuted, marginTop: 6 },
+  cardPrice: { fontSize: 14, marginTop: 10, color: COLORS.text, fontWeight: '600' },
+  slotSection: { marginTop: 4 },
+  slotWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 6 },
+  slot: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceTint,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  slotPressed: { backgroundColor: COLORS.surfaceTint },
+  slotText: { color: COLORS.text, fontWeight: '600' },
+  helperText: { color: COLORS.textMuted, marginTop: 6 },
+  note: { backgroundColor: COLORS.surface, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLORS.border },
+  noteText: { color: COLORS.textMuted },
 });
