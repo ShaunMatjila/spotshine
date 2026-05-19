@@ -33,14 +33,9 @@
                                 <td>{{ $service->duration_minutes }}m</td>
                                 <td class="capitalize">{{ $service->is_active ? 'active' : 'inactive' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ route('admin.services.update', $service) }}" class="mb-2 flex gap-2">
+                                    <form method="POST" action="{{ route('admin.services.toggle', $service) }}" class="mb-2 flex gap-2">
                                         @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="name" value="{{ $service->name }}" />
-                                        <input type="hidden" name="description" value="{{ $service->description }}" />
-                                        <input type="hidden" name="price" value="{{ $service->price }}" />
-                                        <input type="hidden" name="duration_minutes" value="{{ $service->duration_minutes }}" />
-                                        <input type="hidden" name="is_active" value="{{ $service->is_active ? 0 : 1 }}" />
+                                        @method('PATCH')
                                         <button type="submit" class="text-xs text-sky-600">Toggle</button>
                                     </form>
                                     <form method="POST" action="{{ route('admin.services.destroy', $service) }}">
@@ -53,6 +48,9 @@
                         @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div class="mt-4">
+                    {{ $services->links() }}
                 </div>
             </div>
         </div>

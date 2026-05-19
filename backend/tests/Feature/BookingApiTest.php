@@ -75,4 +75,34 @@ class BookingApiTest extends TestCase
             ->get('/admin/dashboard')
             ->assertForbidden();
     }
+
+    public function test_customer_cannot_self_confirm_booking(): void
+    {
+        $service = Service::create([
+            'name' => 'Express Wash',
+            'description' => 'Quick clean',
+            'price' => 100,
+            'duration_minutes' => 45,
+            'is_active' => true,
+        ]);
+
+        $customer = User::factory()->create();
+        $booking = Booking::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'scheduled_at' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($customer);
+
+        $this->patchJson("/api/bookings/{$booking->id}", [
+            'status' => 'confirmed',
+        ])->assertUnprocessable();
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'pending',
+        ]);
+    }
 }

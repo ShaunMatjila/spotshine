@@ -1,11 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import * as AuthSession from 'expo-auth-session';
 import * as Notifications from 'expo-notifications';
-import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -18,8 +16,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-
-WebBrowser.maybeCompleteAuthSession();
 
 type Service = { id: number; name: string; description: string; price: string; duration_minutes: number };
 type Booking = { id: number; scheduled_at: string; status: string; service?: Service };
@@ -52,12 +48,6 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const socialSignIn = async (provider: 'google' | 'facebook') => {
-    const redirectUri = AuthSession.makeRedirectUri({ path: provider });
-    await WebBrowser.openAuthSessionAsync(`${redirectUri}?provider=${provider}`, redirectUri);
-    Alert.alert(`${provider} sign-in`, 'Configure provider keys to complete social authentication.');
-  };
 
   const submit = async () => {
     try {
@@ -98,15 +88,21 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
     if (!email) {
       return Alert.alert('Reset password', 'Enter your email first.');
     }
+    try {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
 
-    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-
-    if (response.ok) {
-      Alert.alert('Password reset', 'A reset link has been sent to your email.');
+      if (response.ok) {
+        Alert.alert('Password reset', 'A reset link has been sent to your email.');
+      } else {
+        Alert.alert('Reset failed', data?.message || 'Unable to send reset link right now.');
+      }
+    } catch {
+      Alert.alert('Reset failed', 'Unable to send reset link right now.');
     }
   };
 
@@ -133,8 +129,8 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (state: AuthState) =
           {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Create account'}</Text>}
         </Pressable>
 
-        <Pressable onPress={() => socialSignIn('google')} style={styles.secondaryButton}><Text style={styles.secondaryText}>Continue with Google</Text></Pressable>
-        <Pressable onPress={() => socialSignIn('facebook')} style={styles.secondaryButton}><Text style={styles.secondaryText}>Continue with Facebook</Text></Pressable>
+        <View style={styles.secondaryButtonDisabled}><Text style={styles.secondaryTextMuted}>Google login (coming soon)</Text></View>
+        <View style={styles.secondaryButtonDisabled}><Text style={styles.secondaryTextMuted}>Facebook login (coming soon)</Text></View>
         <Pressable onPress={() => setIsLogin(!isLogin)}><Text style={styles.link}>{isLogin ? 'Need an account? Register' : 'Already have an account? Login'}</Text></Pressable>
         <Pressable onPress={forgotPassword}><Text style={styles.link}>Forgot password?</Text></Pressable>
       </ScrollView>
@@ -154,17 +150,17 @@ function BookingScreen({ auth, navigation }: { auth: NonNullable<AuthState>; nav
     fetch(`${API_BASE}/services`).then(async (res) => setServices(await res.json()));
   }, []);
 
-  const loadSlots = async (serviceId: number, selectedDate: string) => {
+  const loadSlots = useCallback(async (serviceId: number, selectedDate: string) => {
     const response = await fetch(`${API_BASE}/time-slots?service_id=${serviceId}&date=${selectedDate}`);
     const data = await response.json();
     setSlots(data.slots || []);
-  };
+  }, []);
 
   useEffect(() => {
     if (selectedService) {
       loadSlots(selectedService.id, date);
     }
-  }, [selectedService, date]);
+  }, [date, loadSlots, selectedService]);
 
   const book = async (slot: string) => {
     const response = await fetch(`${API_BASE}/bookings`, {
@@ -315,7 +311,9 @@ const styles = StyleSheet.create({
   primaryButton: { backgroundColor: '#0284c7', borderRadius: 10, padding: 12, alignItems: 'center' },
   buttonText: { color: '#fff', fontWeight: '700' },
   secondaryButton: { borderWidth: 1, borderColor: '#94a3b8', borderRadius: 10, padding: 11, alignItems: 'center' },
+  secondaryButtonDisabled: { borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 11, alignItems: 'center', backgroundColor: '#f8fafc' },
   secondaryText: { color: '#0f172a', fontWeight: '600' },
+  secondaryTextMuted: { color: '#64748b', fontWeight: '600' },
   link: { color: '#0369a1', marginTop: 6 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0' },
   cardSelected: { borderColor: '#0284c7', borderWidth: 2 },

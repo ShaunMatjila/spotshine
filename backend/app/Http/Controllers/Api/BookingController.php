@@ -35,7 +35,7 @@ class BookingController extends Controller
 
         $booking->update($request->validate([
             'scheduled_at' => ['sometimes', 'date', 'after:now'],
-            'status' => ['sometimes', 'in:pending,confirmed,cancelled'],
+            'status' => ['sometimes', 'in:pending,cancelled'],
             'notes' => ['nullable', 'string'],
         ]));
         $request->user()->notify(new BookingStatusNotification($booking->fresh('service'), 'Booking updated.'));
